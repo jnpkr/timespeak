@@ -2,18 +2,22 @@
 description = "Run timespeak once to verify it works"
 run = "./timespeak.sh"
 
-[tasks.install]
-description = "Install the LaunchAgent so timespeak runs every 15 minutes"
+[tasks.bootstrap]
+description = "Bootstrap the LaunchAgent so timespeak runs every 15 minutes"
+depends = ["bootout"]
 run = """
 cp ./com.timespeak.agent.plist ~/Library/LaunchAgents/
 launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.timespeak.agent.plist
-echo "installed"
+echo "bootstrapped"
 """
 
-[tasks.uninstall]
-description = "Remove the LaunchAgent"
+[tasks.bootout]
+description = "Boot out the LaunchAgent (no-op if not present)"
 run = """
-launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/com.timespeak.agent.plist || true
-rm -f ~/Library/LaunchAgents/com.timespeak.agent.plist
-echo "uninstalled"
+plist=~/Library/LaunchAgents/com.timespeak.agent.plist
+if [ -f "$plist" ]; then
+    launchctl bootout gui/$(id -u) "$plist" 2>/dev/null || true
+    rm -f "$plist"
+    echo "booted out"
+fi
 """

@@ -15,8 +15,6 @@
         <dict><key>Minute</key><integer>30</integer></dict>
         <dict><key>Minute</key><integer>45</integer></dict>
     </array>
-    <key>StandardOutPath</key>
-    <string>/tmp/timespeak.log</string>
     <key>StandardErrorPath</key>
     <string>/tmp/timespeak.err</string>
 </dict>
