@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.jonparker.timespeak</string>
+    <string>com.timespeak.agent</string>
     <key>ProgramArguments</key>
     <array>
         <string>/Users/jon/Dev/personal/timespeak/timespeak.sh</string>
