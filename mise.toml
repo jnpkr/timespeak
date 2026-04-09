@@ -1,0 +1,19 @@
+[tasks.test]
+description = "Run timespeak once to verify it works"
+run = "./timespeak.sh"
+
+[tasks.install]
+description = "Install the LaunchAgent so timespeak runs every 15 minutes"
+run = """
+cp ./com.jonparker.timespeak.plist ~/Library/LaunchAgents/
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.jonparker.timespeak.plist
+echo "installed"
+"""
+
+[tasks.uninstall]
+description = "Remove the LaunchAgent"
+run = """
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/com.jonparker.timespeak.plist || true
+rm -f ~/Library/LaunchAgents/com.jonparker.timespeak.plist
+echo "uninstalled"
+"""
