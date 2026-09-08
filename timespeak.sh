@@ -1,10 +1,31 @@
 #!/bin/bash
-# Speaks the current time, unless the screen is locked or a silencing
+# Speaks the current time or a posture reminder, unless the screen is locked or a silencing
 # Focus mode (Do Not Disturb / Sleep) is active.
 
 set -u
 
 log() { printf '%s %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$1" >>/tmp/timespeak.log; }
+
+# Select the announcement before the lock and Focus checks can delay it.
+time_str=$(date +"%-l:%M")
+message="It's $time_str"
+case "${1-}" in
+--scheduled)
+	case "${time_str##*:}" in
+	00 | 15 | 30 | 45) ;;
+	10 | 20 | 40 | 50) message="posture" ;;
+	*)
+		log "skip: no announcement due"
+		exit 0
+		;;
+	esac
+	;;
+"") ;;
+*)
+	printf 'Usage: %s [--scheduled]\n' "$0" >&2
+	exit 2
+	;;
+esac
 
 # 1. Skip if screen is locked.
 locked=$(/usr/bin/swift -e '
@@ -32,7 +53,6 @@ case "$focus" in
 	;;
 esac
 
-# 3. Speak the time.
-time_str=$(date +"%-l:%M")
-log "speak: $time_str"
-/usr/bin/say "It's $time_str"
+# 3. Speak the selected announcement.
+log "speak: $message"
+/usr/bin/say "$message"

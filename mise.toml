@@ -3,7 +3,7 @@ description = "Run timespeak once to verify it works"
 run = "./timespeak.sh"
 
 [tasks.bootstrap]
-description = "Bootstrap the LaunchAgent so timespeak runs every 15 minutes"
+description = "Bootstrap the LaunchAgent for time and posture announcements"
 depends = ["bootout"]
 run = """
 cp ./com.timespeak.agent.plist ~/Library/LaunchAgents/

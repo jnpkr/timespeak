@@ -11,9 +11,20 @@ talk over you while you're on a call.
 
 ## What it does
 
-Every 15 minutes, a LaunchAgent runs `timespeak.sh`, which speaks the time
-via `say` — **unless** any of these are true, in which case it stays
-silent:
+A LaunchAgent runs `timespeak.sh --scheduled` to speak the time or say
+"posture" via `say`, on these minute boundaries each hour:
+
+| Minutes | Announcement |
+| --- | --- |
+| :00, :15, :30, :45 | Current time |
+| :10, :20, :40, :50 | "posture" |
+
+Posture reminders fall on ten-minute boundaries, but time announcements
+take priority at :00 and :30. Only one announcement plays per scheduled
+minute. Missed reminders are not queued for catch-up; runs outside the
+scheduled minutes stay silent.
+
+Both announcements stay silent when any of these are true:
 
 - The screen is locked
 - A **Do Not Disturb** focus is active
@@ -32,8 +43,9 @@ announcements, turn on DND.
   returns the active focus name (e.g. "Do Not Disturb", "Sleep") or
   empty string. LaunchAgents can't read `~/Library/DoNotDisturb/DB/`
   directly (TCC), but the `shortcuts` CLI has its own Apple entitlements.
-- **Scheduling:** a LaunchAgent plist with four `StartCalendarInterval`
-  entries (`:00 :15 :30 :45`).
+- **Scheduling:** a LaunchAgent plist with eight `StartCalendarInterval`
+  entries (`:00 :10 :15 :20 :30 :40 :45 :50`). The script selects the
+  announcement using the current minute when it starts.
 - **Logging:** every run appends one line to `/tmp/timespeak.log` recording
   which branch it took (`skip: ...` or `speak: ...`). This is the only way
   to verify suppression is working without ear-testing.
@@ -53,7 +65,7 @@ state without granting Full Disk Access.
 
 ## Usage
 
-```
+```sh
 mise run test       # run once now
 mise run bootstrap  # load the LaunchAgent into launchd
 mise run bootout    # remove it
