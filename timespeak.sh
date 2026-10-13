@@ -1,6 +1,6 @@
 #!/bin/bash
-# Speaks the current time or a posture reminder, unless the screen is locked or a silencing
-# Focus mode (Do Not Disturb / Sleep) is active.
+# Speaks the current time or a posture reminder, unless the screen is locked, an app is
+# using microphone input, or a silencing Focus mode (Do Not Disturb / Sleep) is active.
 
 set -u
 
@@ -27,20 +27,43 @@ case "${1-}" in
 	;;
 esac
 
-# 1. Skip if screen is locked.
-locked=$(/usr/bin/swift -e '
+# 1. Skip if the screen is locked or an app is using microphone input.
+system_state=$(/usr/bin/swift -e '
+import CoreAudio
+import Foundation
 import Quartz
+
 if let d = CGSessionCopyCurrentDictionary() as? [String: Any],
    d["CGSSessionScreenIsLocked"] as? Int == 1 {
-    print("1")
+    print("locked")
 } else {
-    print("0")
+    do {
+        let microphoneActive = try AudioHardwareSystem.shared.processes.contains { process in
+            try process.isRunningInput
+        }
+        print(microphoneActive ? "microphone-active" : "clear")
+    } catch {
+        fputs("timespeak: system state check failed: \(error)\n", stderr)
+        exit(1)
+    }
 }
 ')
-if [ "$locked" = "1" ]; then
+
+case "$system_state" in
+locked)
 	log "skip: screen locked"
 	exit 0
-fi
+;;
+microphone-active)
+	log "skip: microphone active"
+	exit 0
+;;
+clear) ;;
+*)
+	log "skip: system state check failed"
+	exit 0
+;;
+esac
 
 # 2. Skip if DND or Sleep focus is active.
 #    Uses a macOS Shortcut ("Get Current Focus") because LaunchAgents

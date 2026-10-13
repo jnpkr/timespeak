@@ -27,18 +27,20 @@ scheduled minutes stay silent.
 Both announcements stay silent when any of these are true:
 
 - The screen is locked
+- An app has an active microphone input stream
 - A **Do Not Disturb** focus is active
 - A **Sleep** focus is active
 
-Other focus modes are deliberately *not* treated as silencing — they're
-working contexts, not "leave me alone" signals. If a call needs to suppress
-announcements, turn on DND.
+Do Not Disturb and Sleep are the Focus modes that silence announcements.
+Active microphone input serves as the call proxy and silences announcements
+for any app using it.
 
 ## How it works
 
-- **Lock detection:** swift one-liner against `CGSessionCopyCurrentDictionary`
-  reading `CGSSessionScreenIsLocked`. Uses the system `/usr/bin/swift`, no
-  install needed.
+- **Lock and microphone detection:** a Swift one-liner reads
+  `CGSSessionScreenIsLocked`, then checks Core Audio client processes for an
+  active input stream. A detection failure keeps announcements silent to avoid
+  interruptions.
 - **Focus detection:** calls `shortcuts run "Get Current Focus"`, which
   returns the active focus name (e.g. "Do Not Disturb", "Sleep") or
   empty string. LaunchAgents can't read `~/Library/DoNotDisturb/DB/`
@@ -51,6 +53,8 @@ announcements, turn on DND.
   to verify suppression is working without ear-testing.
 
 ## Prerequisites
+
+TimeSpeak requires macOS 15 or later for Core Audio process-state detection.
 
 Create a Shortcut called **"Get Current Focus"** in the Shortcuts app:
 
